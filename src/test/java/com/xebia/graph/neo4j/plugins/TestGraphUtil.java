@@ -57,4 +57,36 @@ public class TestGraphUtil {
 		
 		return testEdges;
 	}
+	
+	public static List<Relationship> createTestEdgesMakingTriangleGraphWithUnbalancedWeight(Node n1, Node n2, Node n3,
+			GraphDatabaseService graphDb) {
+		Transaction tx = graphDb.beginTx();
+		List<Relationship> testEdges = Lists.newArrayList();
+		
+		try {
+			Relationship e1 = n1.createRelationshipTo(n2, RelTypes.X);
+			e1.setProperty("absoluteSalience", 0);
+			e1.setProperty("weight", 3.0);
+			
+			Relationship e2 = n1.createRelationshipTo(n3, RelTypes.X);
+			e2.setProperty("absoluteSalience", 0);
+			e2.setProperty("weight", 3.0);
+			
+			Relationship e3 = n2.createRelationshipTo(n3, RelTypes.X);
+			e3.setProperty("absoluteSalience", 0);
+			e3.setProperty("weight", 1.0);
+			
+			testEdges.add(e1);
+			testEdges.add(e2);
+			testEdges.add(e3);
+			
+			tx.success();
+		} catch (Exception e) {
+			tx.failure();
+		} finally {
+			tx.finish();
+		}
+		
+		return testEdges;
+	}
 }
