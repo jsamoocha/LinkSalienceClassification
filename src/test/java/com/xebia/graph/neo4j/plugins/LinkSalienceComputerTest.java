@@ -46,7 +46,7 @@ public class LinkSalienceComputerTest {
 		List<Node> testNodes = TestGraphUtil.createTestNodes(graphDb);
 		List<Relationship> testEdges = TestGraphUtil.createTestEdgesLinearlyConnecting(testNodes, graphDb);
 		
-		salienceComputer = new LinkSalienceComputer(testNodes, testEdges);
+		salienceComputer = new LinkSalienceComputer(graphDb);
 		Relationship updatedEdge = salienceComputer.setPropertyFor(testEdges.get(0), "testProp", "foo");
 		Relationship persistedEdge = graphDb.getRelationshipById(testEdges.get(0).getId());
 		
@@ -59,7 +59,7 @@ public class LinkSalienceComputerTest {
 		List<Node> testNodes = TestGraphUtil.createTestNodes(graphDb);
 		List<Relationship> testEdges = TestGraphUtil.createTestEdgesLinearlyConnecting(testNodes, graphDb);
 		
-		salienceComputer = new LinkSalienceComputer(testNodes, testEdges);
+		salienceComputer = new LinkSalienceComputer(graphDb);
 		Relationship updatedEdge = salienceComputer.increaseAbsoluteSalienceForEdgeBetween(testNodes.get(0), testNodes.get(2));
 
 		assertEquals(null, updatedEdge);
@@ -72,7 +72,7 @@ public class LinkSalienceComputerTest {
 		List<Node> testNodes = TestGraphUtil.createTestNodes(graphDb);
 		List<Relationship> testEdges = TestGraphUtil.createTestEdgesLinearlyConnecting(testNodes, graphDb);
 		
-		salienceComputer = new LinkSalienceComputer(testNodes, testEdges);
+		salienceComputer = new LinkSalienceComputer(graphDb);
 		Relationship updatedEdge = salienceComputer.increaseAbsoluteSalienceForEdgeBetween(testNodes.get(1), testNodes.get(2));
 
 		assertEquals(testEdges.get(1), updatedEdge);
