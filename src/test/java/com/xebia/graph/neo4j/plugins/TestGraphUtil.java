@@ -44,7 +44,7 @@ public class TestGraphUtil {
 		try {
 			for (int i = 0; i < nodes.size() - 1; i ++) {
 				Relationship edge = nodes.get(i).createRelationshipTo(nodes.get(i + 1), RelTypes.X);
-				edge.setProperty("absoluteSalience", 0);
+				//edge.setProperty("absoluteSalience", 0);
 				testEdges.add(edge);
 				
 				tx.success();
@@ -65,15 +65,15 @@ public class TestGraphUtil {
 		
 		try {
 			Relationship e1 = n1.createRelationshipTo(n2, RelTypes.X);
-			e1.setProperty("absoluteSalience", 0);
+//			e1.setProperty("absoluteSalience", 0);
 			e1.setProperty("weight", 3.0);
 			
 			Relationship e2 = n1.createRelationshipTo(n3, RelTypes.X);
-			e2.setProperty("absoluteSalience", 0);
+//			e2.setProperty("absoluteSalience", 0);
 			e2.setProperty("weight", 3.0);
 			
 			Relationship e3 = n2.createRelationshipTo(n3, RelTypes.X);
-			e3.setProperty("absoluteSalience", 0);
+//			e3.setProperty("absoluteSalience", 0);
 			e3.setProperty("weight", 1.0);
 			
 			testEdges.add(e1);

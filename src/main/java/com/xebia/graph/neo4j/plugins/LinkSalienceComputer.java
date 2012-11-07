@@ -38,7 +38,8 @@ public class LinkSalienceComputer {
 		}
 		
 		for (Relationship edge: edges) {
-			setPropertyFor(edge, "salience", (double) (Integer) edge.getProperty("absoluteSalience") / ((double) nodes.size() - 1));
+			setPropertyFor(edge, "salience", (double) (Integer) edge.getProperty("absoluteSalience", 0) / ((double) nodes.size() - 1));
+			removePropertyFor(edge, "absoluteSalience");
 		}
 		
 		return edges;
@@ -48,7 +49,7 @@ public class LinkSalienceComputer {
 		
 		for (Relationship edge: fromNode.getRelationships()) {
 			if (edge.getOtherNode(fromNode).equals(toNode)) {
-				return setPropertyFor(edge, "absoluteSalience", (Integer) edge.getProperty("absoluteSalience") + 1);
+				return setPropertyFor(edge, "absoluteSalience", (Integer) edge.getProperty("absoluteSalience", 0) + 1);
 			}
 		}
 		
@@ -60,6 +61,21 @@ public class LinkSalienceComputer {
 		
 		try {
 			edge.setProperty(name, value);
+			tx.success();
+		} catch (Exception e) {
+			tx.failure();
+		} finally {
+			tx.finish();
+		}
+		
+		return edge;
+	}
+	
+	Relationship removePropertyFor(Relationship edge, String name) {
+		Transaction tx = edge.getGraphDatabase().beginTx();
+		
+		try {
+			edge.removeProperty(name);
 			tx.success();
 		} catch (Exception e) {
 			tx.failure();

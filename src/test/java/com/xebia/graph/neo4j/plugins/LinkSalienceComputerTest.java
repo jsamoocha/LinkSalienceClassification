@@ -64,8 +64,8 @@ public class LinkSalienceComputerTest {
 		Relationship updatedEdge = salienceComputer.increaseAbsoluteSalienceForEdgeBetween(testNodes.get(0), testNodes.get(2));
 
 		assertEquals(null, updatedEdge);
-		assertEquals(0, graphDb.getRelationshipById(testEdges.get(0).getId()).getProperty("absoluteSalience"));
-		assertEquals(0, graphDb.getRelationshipById(testEdges.get(1).getId()).getProperty("absoluteSalience"));
+		assertEquals(0, graphDb.getRelationshipById(testEdges.get(0).getId()).getProperty("absoluteSalience", 0));
+		assertEquals(0, graphDb.getRelationshipById(testEdges.get(1).getId()).getProperty("absoluteSalience", 0));
 	}
 
 	@Test
@@ -77,8 +77,8 @@ public class LinkSalienceComputerTest {
 		Relationship updatedEdge = salienceComputer.increaseAbsoluteSalienceForEdgeBetween(testNodes.get(1), testNodes.get(2));
 
 		assertEquals(testEdges.get(1), updatedEdge);
-		assertEquals(0, graphDb.getRelationshipById(testEdges.get(0).getId()).getProperty("absoluteSalience"));
-		assertEquals(1, graphDb.getRelationshipById(testEdges.get(1).getId()).getProperty("absoluteSalience"));
+		assertEquals(0, graphDb.getRelationshipById(testEdges.get(0).getId()).getProperty("absoluteSalience", 0));
+		assertEquals(1, graphDb.getRelationshipById(testEdges.get(1).getId()).getProperty("absoluteSalience", 0));
 	}
 	
 	@Test
