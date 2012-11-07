@@ -38,7 +38,7 @@ public class LinkSalienceComputer {
 		}
 		
 		for (Relationship edge: edges) {
-			setPropertyFor(edge, "globalSalience", (Double) edge.getProperty("absoluteSalience") / (double) nodes.size());
+			setPropertyFor(edge, "salience", (double) (Integer) edge.getProperty("absoluteSalience") / ((double) nodes.size() - 1));
 		}
 		
 		return edges;
@@ -47,7 +47,7 @@ public class LinkSalienceComputer {
 	Relationship increaseAbsoluteSalienceForEdgeBetween(Node fromNode, Node toNode) {
 		
 		for (Relationship edge: fromNode.getRelationships()) {
-			if (edge.getEndNode().equals(toNode)) {
+			if (edge.getOtherNode(fromNode).equals(toNode)) {
 				return setPropertyFor(edge, "absoluteSalience", (Integer) edge.getProperty("absoluteSalience") + 1);
 			}
 		}

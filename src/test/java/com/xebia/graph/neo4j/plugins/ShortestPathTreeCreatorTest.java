@@ -58,5 +58,17 @@ public class ShortestPathTreeCreatorTest {
 		
 		assertEquals(nodes.get(1), spt1.nextEndNode());
 		assertEquals(0, spt1.getPredecessorNodesFor(nodes.get(1)).size());
+		
+		ShortestPathTree spt2 = sptCreator.createShortestPathTree(nodes.get(2));
+		assertEquals(nodes.get(1), spt2.nextEndNode());
+		assertEquals(1, spt2.getPredecessorNodesFor(nodes.get(1)).size());
+		assertEquals(nodes.get(0), spt2.getPredecessorNodesFor(nodes.get(1)).get(0));
+		
+		assertEquals(nodes.get(0), spt2.nextEndNode());
+		assertEquals(1, spt2.getPredecessorNodesFor(nodes.get(0)).size());
+		assertEquals(nodes.get(2), spt2.getPredecessorNodesFor(nodes.get(0)).get(0));
+		
+		assertEquals(nodes.get(2), spt2.nextEndNode());
+		assertEquals(0, spt2.getPredecessorNodesFor(nodes.get(2)).size());
 	}
 }

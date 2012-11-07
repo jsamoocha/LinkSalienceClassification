@@ -1,5 +1,6 @@
 package com.xebia.graph.neo4j.plugins;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -78,5 +79,27 @@ public class LinkSalienceComputerTest {
 		assertEquals(testEdges.get(1), updatedEdge);
 		assertEquals(0, graphDb.getRelationshipById(testEdges.get(0).getId()).getProperty("absoluteSalience"));
 		assertEquals(1, graphDb.getRelationshipById(testEdges.get(1).getId()).getProperty("absoluteSalience"));
+	}
+	
+	@Test
+	public void testComputeLinkSalience_simpleTriangleGraph_salienceReturned() {
+		List<Node> nodes = TestGraphUtil.createTestNodes(graphDb);
+		List<Relationship> edges = TestGraphUtil.createTestEdgesMakingTriangleGraphWithUnbalancedWeight(
+				nodes.get(0), nodes.get(1), nodes.get(2), graphDb);
+		
+		LinkSalienceComputer worker = new LinkSalienceComputer(graphDb);
+		List<Relationship> edgesWithSalience = worker.computeLinkSalience();
+		
+		for (Relationship edge: edgesWithSalience) {
+			if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(1))) {
+				assertEquals(1.0, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(2))) {
+				assertEquals(1.0, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(1)) && edge.getEndNode().equals(nodes.get(2))) {
+				assertEquals(0.0, edge.getProperty("salience"));
+			} else {
+				fail();
+			}
+		}
 	}
 }
