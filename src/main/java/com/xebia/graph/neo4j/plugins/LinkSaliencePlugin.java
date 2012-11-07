@@ -14,6 +14,6 @@ public class LinkSaliencePlugin extends ServerPlugin {
 	@PluginTarget(GraphDatabaseService.class)
 	public void computeLinkSalience(@Source GraphDatabaseService graphDb) {
 		LinkSalienceComputer salienceComputer = new LinkSalienceComputer(graphDb);
-		
+		salienceComputer.computeLinkSalience();
 	}
 }
