@@ -4,9 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.neo4j.graphalgo.CommonEvaluators;
 import org.neo4j.graphalgo.CostEvaluator;
-import org.neo4j.graphalgo.EstimateEvaluator;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphalgo.WeightedPath;
@@ -17,7 +15,6 @@ import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PathExpander;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.kernel.StandardExpander;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -31,14 +28,14 @@ public class LinkSalienceComputer {
 
 	public LinkSalienceComputer(GraphDatabaseService graphDb) {
 		this.graphDb = graphDb;
-		this.nodes = readAllNodesFrom(graphDb);
-		this.edges = readAllEdgesFrom(graphDb);
-	}
-
-	public List<Relationship> computeLinkSalience() {
-		sptCreator = new ShortestPathTreeCreator(graphDb);
-
-		for (Node currentNode : nodes) {
+	  this.nodes = readAllNodesFrom(graphDb);
+	  this.edges = readAllEdgesFrom(graphDb);
+  }
+	
+	public List<Relationship> computeLinkSalience(String weightProperty) {
+		sptCreator = new ShortestPathTreeCreator(graphDb, weightProperty);
+		
+		for (Node currentNode: nodes) {
 			ShortestPathTree spt = sptCreator.createShortestPathTree(currentNode);
 
 			while (spt.hasMoreEndNodes()) {
@@ -53,8 +50,8 @@ public class LinkSalienceComputer {
 		return computeSalience();
 	}
 
-	public List<Relationship> computeLinkSalienceWithDijkstra() {
-		CostEvaluator<Double> costEvaluator = new WeightCostEvaluator();
+	public List<Relationship> computeLinkSalienceWithDijkstra(String weightProperty) {
+		CostEvaluator<Double> costEvaluator = new WeightCostEvaluator(weightProperty);
 		PathFinder<WeightedPath> pathPathFinder = GraphAlgoFactory.dijkstra((PathExpander<?>) StandardExpander.DEFAULT, costEvaluator);
 
 		for (Node currentNode : nodes) {
@@ -146,10 +143,15 @@ public class LinkSalienceComputer {
 	}
 	
 	class WeightCostEvaluator implements CostEvaluator<Double> {
-
+		private String weightProperty;
+		
+		public WeightCostEvaluator(String weightProperty) {
+			this.weightProperty = weightProperty;
+		}
+		
 		@Override
 		public Double getCost(Relationship relationship, Direction direction) {
-	        Object costProp = relationship.getProperty("weight");
+	        Object costProp = relationship.getProperty(weightProperty);
 	        if(costProp instanceof Double)
 	            return 1.0 / (Double)costProp;
 	        if(costProp instanceof Integer)

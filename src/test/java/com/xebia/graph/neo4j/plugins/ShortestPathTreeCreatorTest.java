@@ -33,7 +33,7 @@ public class ShortestPathTreeCreatorTest {
 		List<Relationship> edges = TestGraphUtil.createTestEdgesMakingTriangleGraphWithUnbalancedWeight(
 				nodes.get(0), nodes.get(1), nodes.get(2), graphDb);
 		
-		ShortestPathTreeCreator sptCreator = new ShortestPathTreeCreator(graphDb);
+		ShortestPathTreeCreator sptCreator = new ShortestPathTreeCreator(graphDb, "weight");
 		ShortestPathTree spt = sptCreator.createShortestPathTree(nodes.get(0));
 		
 		assertEquals(nodes.get(2), spt.nextEndNode());

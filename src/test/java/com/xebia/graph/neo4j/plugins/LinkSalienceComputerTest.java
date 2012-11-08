@@ -88,7 +88,7 @@ public class LinkSalienceComputerTest {
 				nodes.get(0), nodes.get(1), nodes.get(2), graphDb);
 		
 		LinkSalienceComputer worker = new LinkSalienceComputer(graphDb);
-		List<Relationship> edgesWithSalience = worker.computeLinkSalience();
+		List<Relationship> edgesWithSalience = worker.computeLinkSalience("weight");
 		
 		for (Relationship edge: edgesWithSalience) {
 			if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(1))) {
@@ -110,7 +110,7 @@ public class LinkSalienceComputerTest {
 				nodes.get(0), nodes.get(1), nodes.get(2), nodes.get(3), graphDb);
 		
 		LinkSalienceComputer worker = new LinkSalienceComputer(graphDb);
-		List<Relationship> edgesWithSalience = worker.computeLinkSalience();
+		List<Relationship> edgesWithSalience = worker.computeLinkSalience("weight");
 		
 		for (Relationship edge: edgesWithSalience) {
 			if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(1))) {
@@ -136,7 +136,7 @@ public class LinkSalienceComputerTest {
 				nodes.get(0), nodes.get(1), nodes.get(2), nodes.get(3), graphDb);
 		
 		LinkSalienceComputer worker = new LinkSalienceComputer(graphDb);
-		List<Relationship> edgesWithSalience = worker.computeLinkSalienceWithDijkstra();
+		List<Relationship> edgesWithSalience = worker.computeLinkSalienceWithDijkstra("weight");
 		
 		for (Relationship edge: edgesWithSalience) {
 			if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(1))) {
