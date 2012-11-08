@@ -16,4 +16,11 @@ public class LinkSaliencePlugin extends ServerPlugin {
 		LinkSalienceComputer salienceComputer = new LinkSalienceComputer(graphDb);
 		salienceComputer.computeLinkSalience();
 	}
+
+	@Name("computeLinkSalienceWithDijkstra")
+	@PluginTarget(GraphDatabaseService.class)
+	public void computeLinkSalienceWithDijkstra(@Source GraphDatabaseService graphDb) {
+		LinkSalienceComputer salienceComputer = new LinkSalienceComputer(graphDb);
+		salienceComputer.computeLinkSalienceWithDijkstra();
+	}
 }
