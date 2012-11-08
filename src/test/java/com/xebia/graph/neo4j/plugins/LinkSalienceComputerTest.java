@@ -102,4 +102,56 @@ public class LinkSalienceComputerTest {
 			}
 		}
 	}
+
+	@Test
+	public void testComputeLinkSalience_simpleSquareGraph_salienceReturned() {
+		List<Node> nodes = TestGraphUtil.createFourTestNodes(graphDb);
+		List<Relationship> edges = TestGraphUtil.createTestEdgesMakingSquareGraphWithUnbalancedWeight(
+				nodes.get(0), nodes.get(1), nodes.get(2), nodes.get(3), graphDb);
+		
+		LinkSalienceComputer worker = new LinkSalienceComputer(graphDb);
+		List<Relationship> edgesWithSalience = worker.computeLinkSalience();
+		
+		for (Relationship edge: edgesWithSalience) {
+			if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(1))) {
+				assertEquals(0.75, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(2))) {
+				assertEquals(0.5, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(1)) && edge.getEndNode().equals(nodes.get(2))) {
+				assertEquals(0.75, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(1)) && edge.getEndNode().equals(nodes.get(3))) {
+				assertEquals(1.0, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(2)) && edge.getEndNode().equals(nodes.get(3))) {
+				assertEquals(0.0, edge.getProperty("salience"));
+			} else {
+				fail();
+			}
+		}
+	}
+
+	@Test
+	public void testComputeLinkSalienceWithShortestPath_simpleSquareGraph_salienceReturned() {
+		List<Node> nodes = TestGraphUtil.createFourTestNodes(graphDb);
+		List<Relationship> edges = TestGraphUtil.createTestEdgesMakingSquareGraphWithUnbalancedWeight(
+				nodes.get(0), nodes.get(1), nodes.get(2), nodes.get(3), graphDb);
+		
+		LinkSalienceComputer worker = new LinkSalienceComputer(graphDb);
+		List<Relationship> edgesWithSalience = worker.computeLinkSalienceWithDijkstra();
+		
+		for (Relationship edge: edgesWithSalience) {
+			if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(1))) {
+				assertEquals(0.75, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(2))) {
+				assertEquals(0.5, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(1)) && edge.getEndNode().equals(nodes.get(2))) {
+				assertEquals(0.75, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(1)) && edge.getEndNode().equals(nodes.get(3))) {
+				assertEquals(1.0, edge.getProperty("salience"));
+			} else if (edge.getStartNode().equals(nodes.get(2)) && edge.getEndNode().equals(nodes.get(3))) {
+				assertEquals(0.0, edge.getProperty("salience"));
+			} else {
+				fail();
+			}
+		}
+	}
 }
