@@ -23,16 +23,18 @@ import com.google.common.collect.Lists;
 public class LinkSalienceComputer {
 	private ShortestPathTreeCreator sptCreator;
 	private GraphDatabaseService graphDb;
+	private int[] absoluteSalienceForEdges = new int[INCREMENT];
+	private static final int INCREMENT = 1000;
 
 	public LinkSalienceComputer(GraphDatabaseService graphDb) {
 		this.graphDb = graphDb;
 	}
-	
+
 	public void computeLinkSalience(String weightProperty) {
 		sptCreator = new ShortestPathTreeCreator(weightProperty);
 		
 		long numberOfNodesProcessed = 0;
-		for (Node currentNode: GlobalGraphOperations.at(graphDb).getAllNodes()) {
+		for (Node currentNode : GlobalGraphOperations.at(graphDb).getAllNodes()) {
 			numberOfNodesProcessed++;
 			ShortestPathTree spt = sptCreator.createShortestPathTree(currentNode);
 
@@ -49,8 +51,10 @@ public class LinkSalienceComputer {
 	}
 
 	public void computeLinkSalienceWithDijkstra(String weightProperty) {
-		CostEvaluator<Double> costEvaluator = new WeightCostEvaluator(weightProperty);
-		PathFinder<WeightedPath> pathPathFinder = GraphAlgoFactory.dijkstra((PathExpander<?>) StandardExpander.DEFAULT, costEvaluator);
+		CostEvaluator<Double> costEvaluator = new WeightCostEvaluator(
+		    weightProperty);
+		PathFinder<WeightedPath> pathPathFinder = GraphAlgoFactory.dijkstra(
+		    (PathExpander<?>) StandardExpander.DEFAULT, costEvaluator);
 
 		long numberOfNodesProcessed = 0;
 		for (Node currentNode : GlobalGraphOperations.at(graphDb).getAllNodes()) {
@@ -65,7 +69,7 @@ public class LinkSalienceComputer {
 				}
 			}
 			for (Relationship edge : edgesInPaths) {
-				setPropertyFor(edge, "absoluteSalience", (Integer) edge.getProperty("absoluteSalience", 0) + 1);
+				increaseAbsoluteSalienceFor(edge);
 			}
 		}
 
@@ -73,9 +77,11 @@ public class LinkSalienceComputer {
 	}
 
 	private void computeSalience(double nodeSize) {
-		for (Relationship edge : GlobalGraphOperations.at(graphDb).getAllRelationships()) {
-			setPropertyFor(edge, "salience", (double) (Integer) edge.getProperty("absoluteSalience", 0)
-					/ ((double) nodeSize - 1));
+		for (Relationship edge : GlobalGraphOperations.at(graphDb)
+		    .getAllRelationships()) {
+			setPropertyFor(edge, "salience",
+			    (double) absoluteSalienceForEdges[(int) edge.getId()]
+			        / ((double) nodeSize - 1));
 			removePropertyFor(edge, "absoluteSalience");
 		}
 	}
@@ -84,13 +90,24 @@ public class LinkSalienceComputer {
 
 		for (Relationship edge : fromNode.getRelationships()) {
 			if (edge.getOtherNode(fromNode).equals(toNode)) {
-				return setPropertyFor(edge, "absoluteSalience", (Integer) edge.getProperty("absoluteSalience", 0) + 1);
+				increaseAbsoluteSalienceFor(edge);
+				return edge;
 			}
 		}
 
 		return null;
 	}
 
+	private void increaseAbsoluteSalienceFor(Relationship edge) {
+		while (edge.getId() > absoluteSalienceForEdges.length) {
+			int[] tmp = new int[absoluteSalienceForEdges.length + INCREMENT];
+			System.arraycopy(absoluteSalienceForEdges, 0, tmp, 0, absoluteSalienceForEdges.length);
+			absoluteSalienceForEdges = tmp;
+		}
+		
+		absoluteSalienceForEdges[(int) edge.getId()]++;
+	}
+	
 	Relationship setPropertyFor(Relationship edge, String name, Object value) {
 		Transaction tx = edge.getGraphDatabase().beginTx();
 
@@ -134,31 +151,32 @@ public class LinkSalienceComputer {
 	List<Relationship> readAllEdgesFrom(GraphDatabaseService graphDb) {
 		List<Relationship> edges = Lists.newArrayList();
 
-		for (Relationship edge : GlobalGraphOperations.at(graphDb).getAllRelationships()) {
+		for (Relationship edge : GlobalGraphOperations.at(graphDb)
+		    .getAllRelationships()) {
 			edges.add(edge);
 		}
 
 		return edges;
 	}
-	
+
 	class WeightCostEvaluator implements CostEvaluator<Double> {
 		private String weightProperty;
-		
+
 		public WeightCostEvaluator(String weightProperty) {
 			this.weightProperty = weightProperty;
 		}
-		
+
 		@Override
 		public Double getCost(Relationship relationship, Direction direction) {
-	        Object costProp = relationship.getProperty(weightProperty);
-	        if(costProp instanceof Double)
-	            return 1.0 / (Double)costProp;
-	        if(costProp instanceof Integer)
-	            return 1.0 / Double.valueOf(((Integer)costProp).intValue());
-	        else
-	            return 1.0 / Double.valueOf(Double.parseDouble(costProp.toString()));
-	    }
+			Object costProp = relationship.getProperty(weightProperty);
+			if (costProp instanceof Double)
+				return 1.0 / (Double) costProp;
+			if (costProp instanceof Integer)
+				return 1.0 / Double.valueOf(((Integer) costProp).intValue());
+			else
+				return 1.0 / Double.valueOf(Double.parseDouble(costProp.toString()));
+		}
 
 	}
-	
+
 }
