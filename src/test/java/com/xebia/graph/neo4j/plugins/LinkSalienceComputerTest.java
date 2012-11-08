@@ -41,18 +41,6 @@ public class LinkSalienceComputerTest {
 		assertFalse(n1Relationships.hasNext());
 	}
 	
-	@Test
-	public void testSetPropertyFor_propertySetAndEdgeReturned() {
-		List<Node> testNodes = TestGraphUtil.createTestNodes(graphDb);
-		List<Relationship> testEdges = TestGraphUtil.createTestEdgesLinearlyConnecting(testNodes, graphDb);
-		
-		salienceComputer = new LinkSalienceComputer(graphDb);
-		Relationship updatedEdge = salienceComputer.setPropertyFor(testEdges.get(0), "testProp", "foo");
-		Relationship persistedEdge = graphDb.getRelationshipById(testEdges.get(0).getId());
-		
-		assertEquals("foo", updatedEdge.getProperty("testProp"));
-		assertEquals("foo", persistedEdge.getProperty("testProp"));
-	}
 	
 	@Test
 	public void testComputeLinkSalience_simpleTriangleGraph_salienceReturned() {

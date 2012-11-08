@@ -77,12 +77,19 @@ public class LinkSalienceComputer {
 	}
 
 	private void computeSalience(double nodeSize) {
-		for (Relationship edge : GlobalGraphOperations.at(graphDb)
-		    .getAllRelationships()) {
-			setPropertyFor(edge, "salience",
-			    (double) absoluteSalienceForEdges[(int) edge.getId()]
-			        / ((double) nodeSize - 1));
-			removePropertyFor(edge, "absoluteSalience");
+		Transaction tx = graphDb.beginTx();
+		
+		try {
+			for (Relationship edge : GlobalGraphOperations.at(graphDb).getAllRelationships()) {
+				edge.setProperty("salience", 
+						(double) absoluteSalienceForEdges[(int) edge.getId()] / ((double) nodeSize - 1));
+			}
+			
+			tx.success();
+		} catch (Exception e) {
+			tx.failure();
+		} finally {
+			tx.finish();
 		}
 	}
 
@@ -108,36 +115,6 @@ public class LinkSalienceComputer {
 		absoluteSalienceForEdges[(int) edge.getId()]++;
 	}
 	
-	Relationship setPropertyFor(Relationship edge, String name, Object value) {
-		Transaction tx = edge.getGraphDatabase().beginTx();
-
-		try {
-			edge.setProperty(name, value);
-			tx.success();
-		} catch (Exception e) {
-			tx.failure();
-		} finally {
-			tx.finish();
-		}
-
-		return edge;
-	}
-
-	Relationship removePropertyFor(Relationship edge, String name) {
-		Transaction tx = edge.getGraphDatabase().beginTx();
-
-		try {
-			edge.removeProperty(name);
-			tx.success();
-		} catch (Exception e) {
-			tx.failure();
-		} finally {
-			tx.finish();
-		}
-
-		return edge;
-	}
-
 	List<Node> readAllNodesFrom(GraphDatabaseService graphDb) {
 		List<Node> nodes = Lists.newArrayList();
 
