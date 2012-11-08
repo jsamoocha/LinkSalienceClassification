@@ -21,6 +21,7 @@ public class ShortestPathTreeCreator {
 	private PriorityQueue<Node> queue = new PriorityQueue<Node>(13, new SptNodeComparator());
 	private Stack<Node> stack = new Stack<Node>();
 	private Map<Node, Double> sptNodeDistancesToRootNode = Maps.newHashMap();
+	private String weightPropertyName;
 	
 	private class SptNodeComparator implements Comparator<Node> {
 
@@ -30,8 +31,9 @@ public class ShortestPathTreeCreator {
 		
 	}
 	
-	public ShortestPathTreeCreator(GraphDatabaseService graphDb) {
+	public ShortestPathTreeCreator(GraphDatabaseService graphDb, String weightPropertyName) {
 		this.graphDb = graphDb;
+		this.weightPropertyName = weightPropertyName;
 	}
 
 	public ShortestPathTree createShortestPathTree(Node rootNode) {
@@ -94,7 +96,7 @@ public class ShortestPathTreeCreator {
 		
 		for (Relationship edge: n1.getRelationships()) {
 			if (edge.getOtherNode(n1).equals(n2)) {
-				return 1.0 / (Double) edge.getProperty("weight");
+				return 1.0 / (Double) edge.getProperty(weightPropertyName);
 			}
 		}
 		

@@ -22,8 +22,8 @@ public class LinkSalienceComputer {
 	  this.edges = readAllEdgesFrom(graphDb);
   }
 	
-	public List<Relationship> computeLinkSalience() {
-		sptCreator = new ShortestPathTreeCreator(graphDb);
+	public List<Relationship> computeLinkSalience(String weightProperty) {
+		sptCreator = new ShortestPathTreeCreator(graphDb, weightProperty);
 		
 		for (Node currentNode: nodes) {
 			ShortestPathTree spt = sptCreator.createShortestPathTree(currentNode);
