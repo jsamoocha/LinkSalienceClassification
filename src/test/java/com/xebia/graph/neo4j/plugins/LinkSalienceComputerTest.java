@@ -1,8 +1,6 @@
 package com.xebia.graph.neo4j.plugins;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +12,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.test.TestGraphDatabaseFactory;
+import org.neo4j.tooling.GlobalGraphOperations;
 
 public class LinkSalienceComputerTest {
 	private GraphDatabaseService graphDb;
@@ -88,9 +87,9 @@ public class LinkSalienceComputerTest {
 				nodes.get(0), nodes.get(1), nodes.get(2), graphDb);
 		
 		LinkSalienceComputer worker = new LinkSalienceComputer(graphDb);
-		List<Relationship> edgesWithSalience = worker.computeLinkSalience("weight");
+		worker.computeLinkSalience("weight");
 		
-		for (Relationship edge: edgesWithSalience) {
+		for (Relationship edge: GlobalGraphOperations.at(graphDb).getAllRelationships()) {
 			if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(1))) {
 				assertEquals(1.0, edge.getProperty("salience"));
 			} else if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(2))) {
@@ -110,9 +109,9 @@ public class LinkSalienceComputerTest {
 				nodes.get(0), nodes.get(1), nodes.get(2), nodes.get(3), graphDb);
 		
 		LinkSalienceComputer worker = new LinkSalienceComputer(graphDb);
-		List<Relationship> edgesWithSalience = worker.computeLinkSalience("weight");
+		worker.computeLinkSalience("weight");
 		
-		for (Relationship edge: edgesWithSalience) {
+		for (Relationship edge: GlobalGraphOperations.at(graphDb).getAllRelationships()) {
 			if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(1))) {
 				assertEquals(0.75, edge.getProperty("salience"));
 			} else if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(2))) {
@@ -136,9 +135,9 @@ public class LinkSalienceComputerTest {
 				nodes.get(0), nodes.get(1), nodes.get(2), nodes.get(3), graphDb);
 		
 		LinkSalienceComputer worker = new LinkSalienceComputer(graphDb);
-		List<Relationship> edgesWithSalience = worker.computeLinkSalienceWithDijkstra("weight");
+		worker.computeLinkSalienceWithDijkstra("weight");
 		
-		for (Relationship edge: edgesWithSalience) {
+		for (Relationship edge: GlobalGraphOperations.at(graphDb).getAllRelationships()) {
 			if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(1))) {
 				assertEquals(0.75, edge.getProperty("salience"));
 			} else if (edge.getStartNode().equals(nodes.get(0)) && edge.getEndNode().equals(nodes.get(2))) {

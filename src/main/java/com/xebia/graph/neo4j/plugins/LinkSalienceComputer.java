@@ -22,20 +22,18 @@ import com.google.common.collect.Lists;
 
 public class LinkSalienceComputer {
 	private ShortestPathTreeCreator sptCreator;
-	private List<Node> nodes;
-	private List<Relationship> edges;
 	private GraphDatabaseService graphDb;
 
 	public LinkSalienceComputer(GraphDatabaseService graphDb) {
 		this.graphDb = graphDb;
-	  this.nodes = readAllNodesFrom(graphDb);
-	  this.edges = readAllEdgesFrom(graphDb);
-  }
+	}
 	
-	public List<Relationship> computeLinkSalience(String weightProperty) {
-		sptCreator = new ShortestPathTreeCreator(graphDb, weightProperty);
+	public void computeLinkSalience(String weightProperty) {
+		sptCreator = new ShortestPathTreeCreator(weightProperty);
 		
-		for (Node currentNode: nodes) {
+		long numberOfNodesProcessed = 0;
+		for (Node currentNode: GlobalGraphOperations.at(graphDb).getAllNodes()) {
+			numberOfNodesProcessed++;
 			ShortestPathTree spt = sptCreator.createShortestPathTree(currentNode);
 
 			while (spt.hasMoreEndNodes()) {
@@ -47,16 +45,18 @@ public class LinkSalienceComputer {
 			}
 		}
 
-		return computeSalience();
+		computeSalience(numberOfNodesProcessed);
 	}
 
-	public List<Relationship> computeLinkSalienceWithDijkstra(String weightProperty) {
+	public void computeLinkSalienceWithDijkstra(String weightProperty) {
 		CostEvaluator<Double> costEvaluator = new WeightCostEvaluator(weightProperty);
 		PathFinder<WeightedPath> pathPathFinder = GraphAlgoFactory.dijkstra((PathExpander<?>) StandardExpander.DEFAULT, costEvaluator);
 
-		for (Node currentNode : nodes) {
+		long numberOfNodesProcessed = 0;
+		for (Node currentNode : GlobalGraphOperations.at(graphDb).getAllNodes()) {
+			numberOfNodesProcessed++;
 			Set<Relationship> edgesInPaths = new HashSet<Relationship>();
-			for (Node otherNode : nodes) {
+			for (Node otherNode : GlobalGraphOperations.at(graphDb).getAllNodes()) {
 				Path path = pathPathFinder.findSinglePath(currentNode, otherNode);
 				if (path != null) {
 					for (Relationship edge : path.relationships()) {
@@ -69,16 +69,15 @@ public class LinkSalienceComputer {
 			}
 		}
 
-		return computeSalience();
+		computeSalience(numberOfNodesProcessed);
 	}
 
-	private List<Relationship> computeSalience() {
-		for (Relationship edge : edges) {
+	private void computeSalience(double nodeSize) {
+		for (Relationship edge : GlobalGraphOperations.at(graphDb).getAllRelationships()) {
 			setPropertyFor(edge, "salience", (double) (Integer) edge.getProperty("absoluteSalience", 0)
-					/ ((double) nodes.size() - 1));
+					/ ((double) nodeSize - 1));
 			removePropertyFor(edge, "absoluteSalience");
 		}
-		return edges;
 	}
 
 	Relationship increaseAbsoluteSalienceForEdgeBetween(Node fromNode, Node toNode) {
