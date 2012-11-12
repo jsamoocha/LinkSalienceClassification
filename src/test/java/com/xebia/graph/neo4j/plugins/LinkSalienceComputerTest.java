@@ -16,8 +16,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 public class LinkSalienceComputerTest {
 	private GraphDatabaseService graphDb;
-	private LinkSalienceComputer salienceComputer;
-
+	
 	@Before
 	public void setupDatabase() {
 		graphDb = new TestGraphDatabaseFactory().newImpermanentDatabaseBuilder()
