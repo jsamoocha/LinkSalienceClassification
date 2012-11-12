@@ -68,10 +68,10 @@ public class TestGraphUtil {
 			e1.setProperty("weight", 3.0);
 			
 			Relationship e2 = n1.createRelationshipTo(n3, RelTypes.X);
-			e2.setProperty("weight", 3.0);
+			e2.setProperty("weight", 1.0);
 			
 			Relationship e3 = n2.createRelationshipTo(n3, RelTypes.X);
-			e3.setProperty("weight", 1.0);
+			e3.setProperty("weight", 3.0);
 			
 			testEdges.add(e1);
 			testEdges.add(e2);

@@ -30,8 +30,12 @@ public class LinkSalienceComputer {
 		this.graphDb = graphDb;
 	}
 
-	public void computeLinkSalience(String weightProperty) {
-		sptCreator = new ShortestPathTreeCreator(weightProperty);
+	public void computeLinkSalience(String weightProperty, boolean treatGraphAsDirected) {
+	  if (treatGraphAsDirected) {
+	    sptCreator = new DirectedEdgeShortestPathTreeCreator(weightProperty);
+	  } else {
+	    sptCreator = new ShortestPathTreeCreator(weightProperty);
+	  }
 		
 		long numberOfNodesProcessed = 0;
 		for (Node currentNode : GlobalGraphOperations.at(graphDb).getAllNodes()) {

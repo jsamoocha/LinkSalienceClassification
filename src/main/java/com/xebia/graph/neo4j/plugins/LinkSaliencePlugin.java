@@ -10,22 +10,27 @@ import org.neo4j.server.plugins.Source;
 
 @Description("Computes link salience of each edge in a (sub-) graph")
 public class LinkSaliencePlugin extends ServerPlugin {
-	
-	@Name("computeLinkSalience")
-	@PluginTarget(GraphDatabaseService.class)
-	public void computeLinkSalience(@Source GraphDatabaseService graphDb, 
-			@Description("Name of the relationship property representing edge weight.") 
-				@Parameter(name="weightProperty") String weightProperty) {
-		LinkSalienceComputer salienceComputer = new LinkSalienceComputer(graphDb);
-		salienceComputer.computeLinkSalience(weightProperty);
-	}
 
-	@Name("computeLinkSalienceWithDijkstra")
-	@PluginTarget(GraphDatabaseService.class)
-	public void computeLinkSalienceWithDijkstra(@Source GraphDatabaseService graphDb,
-			@Description("Name of the relationship property representing edge weight.") 
-				@Parameter(name="weightProperty") String weightProperty) {
-		LinkSalienceComputer salienceComputer = new LinkSalienceComputer(graphDb);
-		salienceComputer.computeLinkSalienceWithDijkstra(weightProperty);
-	}
+  @Name("computeLinkSalience")
+  @PluginTarget(GraphDatabaseService.class)
+  public void computeLinkSalience(
+          @Source GraphDatabaseService graphDb,
+          @Description("Name of the relationship property representing edge weight.") 
+          @Parameter(name = "weightProperty") String weightProperty,
+          @Description("Indicates whether the graph should be treated as a directed graph. "
+                  + "False means edge direction is ignored in computing shortest paths.") 
+          @Parameter(name = "directed") Boolean treatGraphAsDirected) {
+    LinkSalienceComputer salienceComputer = new LinkSalienceComputer(graphDb);
+    salienceComputer.computeLinkSalience(weightProperty, treatGraphAsDirected);
+  }
+
+  @Name("computeLinkSalienceWithDijkstra")
+  @PluginTarget(GraphDatabaseService.class)
+  public void computeLinkSalienceWithDijkstra(
+          @Source GraphDatabaseService graphDb,
+          @Description("Name of the relationship property representing edge weight.") 
+          @Parameter(name = "weightProperty") String weightProperty) {
+    LinkSalienceComputer salienceComputer = new LinkSalienceComputer(graphDb);
+    salienceComputer.computeLinkSalienceWithDijkstra(weightProperty);
+  }
 }
