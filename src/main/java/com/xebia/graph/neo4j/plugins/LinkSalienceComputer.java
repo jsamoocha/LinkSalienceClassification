@@ -26,14 +26,27 @@ public class LinkSalienceComputer {
 	private ShortestPathTreeCreator sptCreator;
 	private GraphDatabaseService graphDb;
 	private int[] absoluteSalienceForEdges = new int[INCREMENT];
+	private String weightProperty = "weight";
+	private boolean treatGraphAsDirected = false;
 	private static final int INCREMENT = 1000;
 
 	public LinkSalienceComputer(GraphDatabaseService graphDb) {
 		this.graphDb = graphDb;
 	}
 
-	public void computeLinkSalience(String weightProperty) {
-		sptCreator = new ShortestPathTreeCreator(weightProperty);
+	public LinkSalienceComputer(GraphDatabaseService graphDb, String weightProperty) {
+		this.graphDb = graphDb;
+		this.weightProperty = weightProperty;
+	}
+	
+	public LinkSalienceComputer(GraphDatabaseService graphDb, String weightProperty, boolean treatGraphAsDirected) {
+		this.graphDb = graphDb;
+		this.weightProperty = weightProperty;
+		this.treatGraphAsDirected = treatGraphAsDirected;
+	}
+	
+	public void computeLinkSalience() {
+		setShortestPathTreeCreator(null);
 
 		long numberOfNodesProcessed = 0;
 		for (Node currentNode : GlobalGraphOperations.at(graphDb).getAllNodes()) {
@@ -52,7 +65,15 @@ public class LinkSalienceComputer {
 		computeSalience(numberOfNodesProcessed - 1);
 	}
 
-	public void computeLinkSalienceWithDijkstra(String weightProperty) {
+	private void setShortestPathTreeCreator(List<Long> nodesInSubGraph) {
+		if (treatGraphAsDirected) {
+			sptCreator = new DirectedEdgeShortestPathTreeCreator(weightProperty, nodesInSubGraph);
+		} else {
+			sptCreator = new ShortestPathTreeCreator(weightProperty, nodesInSubGraph);
+		}
+	}
+
+	public void computeLinkSalienceWithDijkstra() {
 		CostEvaluator<Double> costEvaluator = new WeightCostEvaluator(weightProperty);
 		PathFinder<WeightedPath> pathPathFinder = GraphAlgoFactory.dijkstra((PathExpander<?>) StandardExpander.DEFAULT,
 				costEvaluator);
@@ -138,7 +159,7 @@ public class LinkSalienceComputer {
 
 	}
 
-	public void computeLinkSalienceForQueryResult(String query, String weightProperty) {
+	public void computeLinkSalienceForQueryResult(String query) {
 		ExecutionEngine engine = new ExecutionEngine(graphDb);
 		ExecutionResult executionResult = engine.execute(query);
 		List<String> columns = executionResult.columns();
@@ -147,9 +168,9 @@ public class LinkSalienceComputer {
 		List<Long> nodesInSubGraph = new ArrayList<Long>();
 		while (nodes.hasNext()) {
 			nodesInSubGraph.add(nodes.next().getId());
-		}	
-		
-		sptCreator = new ShortestPathTreeCreator(weightProperty, nodesInSubGraph);
+		}
+
+		setShortestPathTreeCreator(nodesInSubGraph);
 
 		executionResult = engine.execute(query);
 		columns = executionResult.columns();
@@ -161,10 +182,10 @@ public class LinkSalienceComputer {
 			if (currentNode.getId() != 0) {
 				numberOfNodesProcessed++;
 				ShortestPathTree spt = sptCreator.createShortestPathTree(currentNode);
-	
+
 				while (spt.hasMoreEndNodes()) {
 					Node currentSptEndNode = spt.nextEndNode();
-	
+
 					for (Node predecessor : spt.getPredecessorNodesFor(currentSptEndNode)) {
 						increaseAbsoluteSalienceForEdgeBetween(predecessor, currentSptEndNode);
 					}
