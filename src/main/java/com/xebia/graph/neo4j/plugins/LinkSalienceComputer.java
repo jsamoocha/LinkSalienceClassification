@@ -1,9 +1,13 @@
 package com.xebia.graph.neo4j.plugins;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphalgo.CostEvaluator;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
@@ -18,8 +22,6 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.StandardExpander;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import com.google.common.collect.Lists;
-
 public class LinkSalienceComputer {
 	private ShortestPathTreeCreator sptCreator;
 	private GraphDatabaseService graphDb;
@@ -32,7 +34,7 @@ public class LinkSalienceComputer {
 
 	public void computeLinkSalience(String weightProperty) {
 		sptCreator = new ShortestPathTreeCreator(weightProperty);
-		
+
 		long numberOfNodesProcessed = 0;
 		for (Node currentNode : GlobalGraphOperations.at(graphDb).getAllNodes()) {
 			numberOfNodesProcessed++;
@@ -47,14 +49,13 @@ public class LinkSalienceComputer {
 			}
 		}
 
-		computeSalience(numberOfNodesProcessed);
+		computeSalience(numberOfNodesProcessed - 1);
 	}
 
 	public void computeLinkSalienceWithDijkstra(String weightProperty) {
-		CostEvaluator<Double> costEvaluator = new WeightCostEvaluator(
-		    weightProperty);
-		PathFinder<WeightedPath> pathPathFinder = GraphAlgoFactory.dijkstra(
-		    (PathExpander<?>) StandardExpander.DEFAULT, costEvaluator);
+		CostEvaluator<Double> costEvaluator = new WeightCostEvaluator(weightProperty);
+		PathFinder<WeightedPath> pathPathFinder = GraphAlgoFactory.dijkstra((PathExpander<?>) StandardExpander.DEFAULT,
+				costEvaluator);
 
 		long numberOfNodesProcessed = 0;
 		for (Node currentNode : GlobalGraphOperations.at(graphDb).getAllNodes()) {
@@ -73,18 +74,20 @@ public class LinkSalienceComputer {
 			}
 		}
 
-		computeSalience(numberOfNodesProcessed);
+		computeSalience(numberOfNodesProcessed - 1);
 	}
 
 	private void computeSalience(double nodeSize) {
 		Transaction tx = graphDb.beginTx();
-		
+
 		try {
-			for (Relationship edge : GlobalGraphOperations.at(graphDb).getAllRelationships()) {
-				edge.setProperty("salience", 
-						(double) absoluteSalienceForEdges[(int) edge.getId()] / ((double) nodeSize - 1));
+			for (int i = 0; i < absoluteSalienceForEdges.length; i++) {
+				if (absoluteSalienceForEdges[i] > 0) {
+					Relationship edge = graphDb.getRelationshipById(i);
+
+					edge.setProperty("salience", (double) absoluteSalienceForEdges[i] / ((double) nodeSize));
+				}
 			}
-			
 			tx.success();
 		} catch (Exception e) {
 			tx.failure();
@@ -111,29 +114,8 @@ public class LinkSalienceComputer {
 			System.arraycopy(absoluteSalienceForEdges, 0, tmp, 0, absoluteSalienceForEdges.length);
 			absoluteSalienceForEdges = tmp;
 		}
-		
+
 		absoluteSalienceForEdges[(int) edge.getId()]++;
-	}
-	
-	List<Node> readAllNodesFrom(GraphDatabaseService graphDb) {
-		List<Node> nodes = Lists.newArrayList();
-
-		for (Node node : GlobalGraphOperations.at(graphDb).getAllNodes()) {
-			nodes.add(node);
-		}
-
-		return nodes;
-	}
-
-	List<Relationship> readAllEdgesFrom(GraphDatabaseService graphDb) {
-		List<Relationship> edges = Lists.newArrayList();
-
-		for (Relationship edge : GlobalGraphOperations.at(graphDb)
-		    .getAllRelationships()) {
-			edges.add(edge);
-		}
-
-		return edges;
 	}
 
 	class WeightCostEvaluator implements CostEvaluator<Double> {
@@ -153,6 +135,44 @@ public class LinkSalienceComputer {
 			else
 				return 1.0 / Double.valueOf(Double.parseDouble(costProp.toString()));
 		}
+
+	}
+
+	public void computeLinkSalienceForQueryResult(String query, String weightProperty) {
+		ExecutionEngine engine = new ExecutionEngine(graphDb);
+		ExecutionResult executionResult = engine.execute(query);
+		List<String> columns = executionResult.columns();
+		Iterator<Node> nodes = executionResult.columnAs(columns.get(0));
+
+		List<Long> nodesInSubGraph = new ArrayList<Long>();
+		while (nodes.hasNext()) {
+			nodesInSubGraph.add(nodes.next().getId());
+		}	
+		
+		sptCreator = new ShortestPathTreeCreator(weightProperty, nodesInSubGraph);
+
+		executionResult = engine.execute(query);
+		columns = executionResult.columns();
+		nodes = executionResult.columnAs(columns.get(0));
+		long numberOfNodesProcessed = 0;
+		while (nodes.hasNext()) {
+
+			Node currentNode = nodes.next();
+			if (currentNode.getId() != 0) {
+				numberOfNodesProcessed++;
+				ShortestPathTree spt = sptCreator.createShortestPathTree(currentNode);
+	
+				while (spt.hasMoreEndNodes()) {
+					Node currentSptEndNode = spt.nextEndNode();
+	
+					for (Node predecessor : spt.getPredecessorNodesFor(currentSptEndNode)) {
+						increaseAbsoluteSalienceForEdgeBetween(predecessor, currentSptEndNode);
+					}
+				}
+			}
+		}
+
+		computeSalience(numberOfNodesProcessed);
 
 	}
 

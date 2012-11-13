@@ -28,4 +28,15 @@ public class LinkSaliencePlugin extends ServerPlugin {
 		LinkSalienceComputer salienceComputer = new LinkSalienceComputer(graphDb);
 		salienceComputer.computeLinkSalienceWithDijkstra(weightProperty);
 	}
+
+	@Name("computeLinkSalienceForQueryResult")
+	@PluginTarget(GraphDatabaseService.class)
+	public void computeLinkSalienceForQueryResult(@Source GraphDatabaseService graphDb,
+			@Description("Name of the cypher query to provide the subgraph.") 
+	@Parameter(name="query") String query,
+		@Description("Name of the relationship property representing edge weight.") 
+		@Parameter(name="weightProperty") String weightProperty) {
+		LinkSalienceComputer salienceComputer = new LinkSalienceComputer(graphDb);
+		salienceComputer.computeLinkSalienceForQueryResult(query, weightProperty);
+	}
 }
