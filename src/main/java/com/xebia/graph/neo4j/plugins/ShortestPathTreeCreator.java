@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Stack;
+import java.util.logging.Logger;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -14,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class ShortestPathTreeCreator {
+  private static final Logger LOG = Logger.getLogger(ShortestPathTreeCreator.class.getName());
   private Map<Node, List<Node>> predecessors = Maps.newHashMap();
   private PriorityQueue<Node> queue = new PriorityQueue<Node>(13, new SptNodeComparator());
   private Stack<Node> stack = new Stack<Node>();
@@ -89,9 +91,14 @@ public class ShortestPathTreeCreator {
     } else if (weightValue instanceof Float) {
       return ((Float) weightValue).doubleValue();
     } else if (weightValue instanceof String) {
-      return Double.parseDouble(weightPropertyName);
+      try {
+        return Double.parseDouble(weightPropertyName);
+      } catch (NumberFormatException e) {
+        LOG.warning("Failed to parse weight property for edge [" + edge.getId() + "]: " + e.getMessage());
+        return 0.0;
+      }
     } else
-      return 0.00000000001;
+      return 0.0;
   }
 
   protected Iterable<Relationship> getEdgesConnectedTo(Node node) {

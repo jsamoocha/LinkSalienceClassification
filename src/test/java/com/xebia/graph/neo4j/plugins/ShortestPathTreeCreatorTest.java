@@ -71,4 +71,46 @@ public class ShortestPathTreeCreatorTest {
 		assertEquals(nodes.get(2), spt2.nextEndNode());
 		assertEquals(0, spt2.getPredecessorNodesFor(nodes.get(2)).size());
 	}
+	
+	@Test
+	public void testCreateShortestPathTree_triangleGraphWithZeroWeightedEdge_sptReturned() {
+	  List<Node> nodes = TestGraphUtil.createTestNodes(graphDb);
+	  List<Relationship> edges = TestGraphUtil.createTestEdgesMakingTriangleGraphWithOneZeroWeightEdge(
+	          nodes.get(0), nodes.get(1), nodes.get(2), graphDb);
+	  
+	  ShortestPathTreeCreator sptCreator = new ShortestPathTreeCreator("weight");
+    ShortestPathTree spt = sptCreator.createShortestPathTree(nodes.get(0));
+    
+    assertEquals(nodes.get(1), spt.nextEndNode());
+    assertEquals(1, spt.getPredecessorNodesFor(nodes.get(1)).size());
+    assertEquals(nodes.get(2), spt.getPredecessorNodesFor(nodes.get(1)).get(0));
+    
+    assertEquals(nodes.get(2), spt.nextEndNode());
+    assertEquals(1, spt.getPredecessorNodesFor(nodes.get(2)).size());
+    assertEquals(nodes.get(0), spt.getPredecessorNodesFor(nodes.get(2)).get(0));
+    
+    assertEquals(nodes.get(0), spt.nextEndNode());
+    assertEquals(0, spt.getPredecessorNodesFor(nodes.get(0)).size());
+	}
+	
+	@Test
+	public void testCreateShortestPathTree_triangleGraphWithUnparseableEdgeWeight_sptReturnedAsIfUnparseableEdgeWeightWereZero() {
+	  List<Node> nodes = TestGraphUtil.createTestNodes(graphDb);
+    List<Relationship> edges = TestGraphUtil.createTestEdgesMakingTriangleGraphWithOneUnparseableEdgeWeight(
+            nodes.get(0), nodes.get(1), nodes.get(2), graphDb);
+    
+    ShortestPathTreeCreator sptCreator = new ShortestPathTreeCreator("weight");
+    ShortestPathTree spt = sptCreator.createShortestPathTree(nodes.get(0));
+    
+    assertEquals(nodes.get(1), spt.nextEndNode());
+    assertEquals(1, spt.getPredecessorNodesFor(nodes.get(1)).size());
+    assertEquals(nodes.get(2), spt.getPredecessorNodesFor(nodes.get(1)).get(0));
+    
+    assertEquals(nodes.get(2), spt.nextEndNode());
+    assertEquals(1, spt.getPredecessorNodesFor(nodes.get(2)).size());
+    assertEquals(nodes.get(0), spt.getPredecessorNodesFor(nodes.get(2)).get(0));
+    
+    assertEquals(nodes.get(0), spt.nextEndNode());
+    assertEquals(0, spt.getPredecessorNodesFor(nodes.get(0)).size());
+	}
 }
