@@ -14,82 +14,102 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class ShortestPathTreeCreator {
-	private Map<Node, List<Node>> predecessors = Maps.newHashMap();
-	private PriorityQueue<Node> queue = new PriorityQueue<Node>(13, new SptNodeComparator());
-	private Stack<Node> stack = new Stack<Node>();
-	private Map<Node, Double> sptNodeDistancesToRootNode = Maps.newHashMap();
-	private String weightPropertyName;
-	private List<Long> nodeIdsToProcess = null;
+  private Map<Node, List<Node>> predecessors = Maps.newHashMap();
+  private PriorityQueue<Node> queue = new PriorityQueue<Node>(13, new SptNodeComparator());
+  private Stack<Node> stack = new Stack<Node>();
+  private Map<Node, Double> sptNodeDistancesToRootNode = Maps.newHashMap();
+  private String weightPropertyName;
+  private List<Long> nodeIdsToProcess = null;
 
-	private class SptNodeComparator implements Comparator<Node> {
+  private class SptNodeComparator implements Comparator<Node> {
 
-		public int compare(Node n1, Node n2) {
-			return Double.compare(sptNodeDistancesToRootNode.get(n1), sptNodeDistancesToRootNode.get(n2));
-		}
+    public int compare(Node n1, Node n2) {
+      return Double.compare(sptNodeDistancesToRootNode.get(n1), sptNodeDistancesToRootNode.get(n2));
+    }
 
-	}
+  }
 
-	public ShortestPathTreeCreator(String weightPropertyName) {
-		this.weightPropertyName = weightPropertyName;
-	}
+  public ShortestPathTreeCreator(String weightPropertyName) {
+    this.weightPropertyName = weightPropertyName;
+  }
 
-	public ShortestPathTreeCreator(String weightPropertyName, List<Long> nodesInSubGraph) {
-		this.weightPropertyName = weightPropertyName;
-		this.nodeIdsToProcess = nodesInSubGraph;
-	}
+  public ShortestPathTreeCreator(String weightPropertyName, List<Long> nodesInSubGraph) {
+    this.weightPropertyName = weightPropertyName;
+    this.nodeIdsToProcess = nodesInSubGraph;
+  }
 
-	public ShortestPathTree createShortestPathTree(Node rootNode) {
-		initNodes(rootNode);
+  public ShortestPathTree createShortestPathTree(Node rootNode) {
+    initNodes(rootNode);
 
-		while (!queue.isEmpty()) {
-			Node minimumDistanceNode = queue.poll();
+    while (!queue.isEmpty()) {
+      Node minimumDistanceNode = queue.poll();
 
-			if (nodeIdsToProcess == null || nodeIdsToProcess.contains(minimumDistanceNode.getId())) {
-				stack.push(minimumDistanceNode);
+      stack.push(minimumDistanceNode);
 
-				for (Relationship edge : getEdgesConnectedTo(minimumDistanceNode)) {
-					Node potentialShortestPathNode = edge.getOtherNode(minimumDistanceNode);
-					double connectionDistance = 1.0 / (Double) edge.getProperty(weightPropertyName);
-					double minimumDistance = getDistance(minimumDistanceNode);
-					double potentialShortestPathNodeDistance = getDistance(potentialShortestPathNode);
+      for (Relationship edge : getEdgesConnectedTo(minimumDistanceNode)) {
+        Node potentialShortestPathNode = edge.getOtherNode(minimumDistanceNode);
 
-					if (potentialShortestPathNodeDistance > minimumDistance + connectionDistance) {
-						sptNodeDistancesToRootNode.put(potentialShortestPathNode, minimumDistance + connectionDistance);
+        if (nodeIdsToProcess == null || nodeIdsToProcess.contains(potentialShortestPathNode.getId())) {
 
-						if (queue.contains(potentialShortestPathNode)) {
-							queue.remove(potentialShortestPathNode);
-						}
+          double connectionDistance = 1.0 / getWeightPropertyAsDoubleFor(edge);
+          double minimumDistance = getDistance(minimumDistanceNode);
+          double potentialShortestPathNodeDistance = getDistance(potentialShortestPathNode);
 
-						queue.add(potentialShortestPathNode);
-						predecessors.put(potentialShortestPathNode, new ArrayList<Node>());
-					}
+          if (potentialShortestPathNodeDistance > minimumDistance + connectionDistance) {
+            sptNodeDistancesToRootNode.put(potentialShortestPathNode, minimumDistance + connectionDistance);
 
-					if (sptNodeDistancesToRootNode.get(potentialShortestPathNode) == minimumDistance
-							+ connectionDistance) {
-						predecessors.get(potentialShortestPathNode).add(minimumDistanceNode);
-					}
-				}
-			}
-		}
-		return new ShortestPathTree(stack, predecessors);
-	}
+            if (queue.contains(potentialShortestPathNode)) {
+              queue.remove(potentialShortestPathNode);
+            }
 
-	protected Iterable<Relationship> getEdgesConnectedTo(Node node) {
-		return node.getRelationships();
-	}
+            queue.add(potentialShortestPathNode);
+            predecessors.put(potentialShortestPathNode, new ArrayList<Node>());
+          }
 
-	private double getDistance(Node node) {
-		Double distance = sptNodeDistancesToRootNode.get(node);
-		return (distance == null) ? Double.POSITIVE_INFINITY : distance.doubleValue();
-	}
+          if (getDistance(potentialShortestPathNode) != Double.POSITIVE_INFINITY
+                  && getDistance(potentialShortestPathNode) == minimumDistance + connectionDistance) {
+            predecessors.get(potentialShortestPathNode).add(minimumDistanceNode);
+          }
+        }
+      }
+    }
 
-	void initNodes(Node rootNode) {
-		sptNodeDistancesToRootNode.clear();
-		predecessors.clear();
+    return new ShortestPathTree(stack, predecessors);
+  }
 
-		sptNodeDistancesToRootNode.put(rootNode, 0.0);
-		predecessors.put(rootNode, Lists.<Node> newArrayList());
-		queue.add(rootNode);
-	}
+  private double getWeightPropertyAsDoubleFor(Relationship edge) {
+    Object weightValue = edge.getProperty(weightPropertyName);
+
+    if (weightValue instanceof Double) {
+      return (Double) weightValue;
+    } else if (weightValue instanceof Integer) {
+      return (double) ((Integer) weightValue).intValue();
+    } else if (weightValue instanceof Long) {
+      return (double) ((Long) weightValue).longValue();
+    } else if (weightValue instanceof Float) {
+      return ((Float) weightValue).doubleValue();
+    } else if (weightValue instanceof String) {
+      return Double.parseDouble(weightPropertyName);
+    } else
+      return 0.00000000001;
+  }
+
+  protected Iterable<Relationship> getEdgesConnectedTo(Node node) {
+    return node.getRelationships();
+  }
+
+  private double getDistance(Node node) {
+    Double distance = sptNodeDistancesToRootNode.get(node);
+    return (distance == null) ? Double.POSITIVE_INFINITY : distance.doubleValue();
+  }
+
+  void initNodes(Node rootNode) {
+    sptNodeDistancesToRootNode.clear();
+    predecessors.clear();
+
+    sptNodeDistancesToRootNode.put(rootNode, 0.0);
+    predecessors.put(rootNode, Lists.<Node> newArrayList());
+    queue.add(rootNode);
+  }
 
 }
