@@ -130,7 +130,7 @@ public class LinkSalienceComputer {
 	}
 
 	private void increaseAbsoluteSalienceFor(Relationship edge) {
-		while (edge.getId() > absoluteSalienceForEdges.length) {
+		while (edge.getId() >= absoluteSalienceForEdges.length) {
 			int[] tmp = new int[absoluteSalienceForEdges.length + INCREMENT];
 			System.arraycopy(absoluteSalienceForEdges, 0, tmp, 0, absoluteSalienceForEdges.length);
 			absoluteSalienceForEdges = tmp;
