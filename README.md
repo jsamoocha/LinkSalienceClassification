@@ -24,11 +24,15 @@ Perform `curl -v http://[NEO4J_HOST]:7474/db/data/ext/LinkSaliencePlugin` to exp
 
 Example usages:
 
-* `curl -X POST http://[NEO4J_HOST]:7474/db/data/ext/LinkSaliencePlugin/graphdb/computeLinkSalience \  
-	-H "content-type: application/json" -d '{"weightProperty":"w", "directed":"true"}'`
-* `curl -X POST http://[NEO4J_HOST]:7474/db/data/ext/LinkSaliencePlugin/graphdb/computeLinkSalience \  
+```bash
+curl -X POST http://[NEO4J_HOST]:7474/db/data/ext/LinkSaliencePlugin/graphdb/computeLinkSalience \  
+	-H "content-type: application/json" \
+	-d '{"weightProperty":"w", "directed":"true"}'
+
+curl -X POST http://[NEO4J_HOST]:7474/db/data/ext/LinkSaliencePlugin/graphdb/computeLinkSalience \  
 	-H "content-type: application/json" \  
-	-d '{"weightProperty":"w", "directed":"true""query":"start n = node(*) where n.surplus! > 0"}'`
+	-d '{"weightProperty":"w", "directed":"true""query":"start n = node(*) where n.surplus! > 0"}'
+```
 
 The algorithm (at least the version based on the Grady paper, see issues below) has reasonable performance on graphs of limited size 
 (few thousand nodes maximum) - salience should be computed within the order of magnitude of seconds/minutes on a single node with modern 
