@@ -29,7 +29,7 @@ curl -X POST http://[NEO4J_HOST]:7474/db/data/ext/LinkSaliencePlugin/graphdb/com
 	-H "content-type: application/json" \
 	-d '{"weightProperty":"w", "directed":"true"}'
 
-curl -X POST http://[NEO4J_HOST]:7474/db/data/ext/LinkSaliencePlugin/graphdb/computeLinkSalience \  
+curl -X POST http://[NEO4J_HOST]:7474/db/data/ext/LinkSaliencePlugin/graphdb/computeLinkSalienceForQueryResult \  
 	-H "content-type: application/json" \  
 	-d '{"weightProperty":"w", "directed":"true""query":"start n = node(*) where n.surplus! > 0"}'
 ```
